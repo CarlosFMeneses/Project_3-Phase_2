@@ -15,6 +15,6 @@ public class StringTooLongException extends Exception
 {
 	public StringTooLongException()
 	{
-		super ("Too many characters. Try again...");
+		super ("Check file error.log for errors");
 	}
 }

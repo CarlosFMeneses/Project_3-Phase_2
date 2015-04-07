@@ -16,10 +16,11 @@ the offending statement. Store the errors in a file called error.log (see also:
 StringTooLongException.java)
 */
 
+import static java.nio.file.StandardOpenOption.*;
 import java.nio.file.*;
 import java.io.*;
 
-public class StringApp
+public class StringApp 
 {
 	public static void main(String[] args) throws StringTooLongException
 	{
@@ -29,40 +30,57 @@ public class StringApp
 		int maxLength = 20;
 		String doneString = "done";
 		Path inPath = Paths.get(inFileName);
-		String inString = null;
-				
-		try
-		{
-			InputStream inStream = new BufferedInputStream(Files.newInputStream(inPath));
-			BufferedReader inRead = new BufferedReader(new InputStreamReader(inStream));
-			
-			System.out.println("Reading from file " + inFileName + "...");
-			
-			while (!done)
-			{
-				inString = inRead.readLine();
-				
-				if (doneString.equalsIgnoreCase(inString))
-				{
-					done = true;
-				}
-				
-				if (inString.length() >= maxLength)
-				{
-					throw(new StringTooLongException());
-				}
-				else
-				{
-					System.out.print(inString);
-				}
-			}
-		}
-		catch (StringTooLongException stle)
-		{
-			System.out.println(stle);
-		}
+      Path outPath = Paths.get(outFileName);
+		String inString = "";
+      String outString = "";
+      int lineCount = 0;
 		
-		System.out.println("Done! Please check file " + outFileName + 
-						   " for possible errors");
+      try
+      {
+   		InputStream input = new BufferedInputStream(Files.newInputStream(inPath));
+   		BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+         
+         OutputStream output = new BufferedOutputStream(Files.newOutputStream(outPath, CREATE));
+         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
+            
+   		System.out.println("Reading from file " + inFileName + "...");
+         
+   		while (!done)
+   		{
+   			++lineCount;
+            try
+            {
+               inString = reader.readLine();
+               
+      			if (doneString.equalsIgnoreCase(inString))
+      			{
+      				done = true;
+      			}
+               
+               else if (inString.length() >= maxLength)
+               {
+                  outString = lineCount + " " + inString;
+                  writer.write(outString, 0, outString.length());
+                  throw(new StringTooLongException());
+               }
+            }
+            catch(StringTooLongException e)
+            {
+               System.out.println(e);
+            }
+   		}
+		   reader.close();
+         writer.close();
+      }
+      catch(NullPointerException e)
+      {
+         System.out.println("Reached EOF before " + doneString);
+      }
+      
+      catch(Exception e)
+      {
+         System.out.println(e);
+      }
+			
 	}
 }
